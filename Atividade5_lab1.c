@@ -5,19 +5,34 @@
 int *v, M, N;
 
 void *soma_um(void *arg) {
+    //Usa o argumento para identificar em qual thread estamos trabalhando e ela começar do elemento correspondente a ela.
     int id = *(int *)arg;
     int div = N / M;
+    int res = N % M;
 
-    if(id == M-1){
+    //Caso o indice tenha passado o numero de threads que calcularao mais elementos executa apenas N/M elementos.
+    if(id > res){
         for(int i = id*div; i < N; i++) {
         v[i] += 1;
         }
+    //Caso contrário executa N/M + 1 (resto) elementos.
     }else{
-        for(int i = id*div; i < (id+1)*div; i++) {
+        for(int i = (id*div + id); i < (id+1)*div; i++) {
         v[i] += 1;
         }
     }
     pthread_exit(NULL);
+}
+
+void checaVetor(){
+    int erros=0;
+    for(int i = 0; i < N; i++) {
+        if(v[i]!= (i*10 + 1)){
+            erros++;
+        }
+    }
+    printf("Total de %i erros\n", erros);
+    //Como nosso vetor inicial é 0 10 20 30... estamos checando de o final 
 }
 
 int main(int argc, char* argv[]) {
@@ -38,12 +53,11 @@ int main(int argc, char* argv[]) {
     // Preenche o vetor com 0, 10, 20, 30...
     for(int i = 0; i < N; i++) {
         v[i] = i * 10;
-    }
-    printf("Vetor inicial:\n");
-    for(int i = 0; i < N; i++) {
-        printf("%d ", v[i]);
+        printf("%i ", v[i]);
     }
     printf("\n");
+
+    printf("Vetor inicial com %i elementos ordenados multiplos de 10.\n", N);
 
     //Execução das M threads
     for(int i = 0; i < M; i++) {
@@ -60,11 +74,16 @@ int main(int argc, char* argv[]) {
     }
 
     //Resultado
-    printf("Vetor final:\n");
+    checaVetor();
+
     for(int i = 0; i < N; i++) {
-        printf("%d ", v[i]);
+        printf("%i ", v[i]);
     }
+    printf("\n");
+
     printf("\n--Thread principal terminou\n");
+
+    
 
     free(v);
     return 0;
